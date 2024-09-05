@@ -51,7 +51,7 @@ function expandAnimations(doc as Object)
   sDocUrl = doc.getURL()
   sDocPath = DirectoryNameoutofPath(sDocUrl, "/")
   sDocFileNameWithoutExtension = GetFileNameWithoutExtension(sDocUrl, "/")
-  newUrlPdf = sDocPath + "/" + sDocFileNameWithoutExtension + ".pdf"
+  newUrlPdf = sDocPath + "/" + sDocFileNameWithoutExtension + "-expanded.pdf"
 
   ' rename the document
   docExpanded = renameAsExpanded(doc)
