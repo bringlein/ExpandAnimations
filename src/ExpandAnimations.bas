@@ -154,7 +154,6 @@ function expandDocument(doc as Object, oStatusBar as Object)
                     currentSlide = doc.drawPages(i + frame)
                     currentSlide.Name = origName & " (" & CStr(frame+1) & ")"
                     removeInvisibleShapes(currentSlide, visArray, frame)
-                    fixateSlideNumber(doc, currentSlide, i+1, numSlides)
                 next
             end if
         end if
@@ -168,11 +167,47 @@ function expandDocument(doc as Object, oStatusBar as Object)
 end function
 
 function fixateSlideNumber(doc as Object, slide as Object, slideNr as Integer, slideCount as Integer)
-    ' master = slide.MasterPage
-    ' shapeCount = master.getCount()
+    master = slide.MasterPage
+    shapeCount = master.getCount()
+    for shapeNr = 0 to shapeCount-1
+        shape = master.getByIndex(shapeNr)
+        shapeType = shape.getShapeType()
+		if shapeType = "com.sun.star.presentation.SlideNumberShape" then
+            copy = doc.createInstance("com.sun.star.drawing.TextShape")
+            'Call Tools.WritedbgInfo(shape)
+            slide.IsPageNumberVisible = False
+            slide.add(copy)
+            copy.setString(CStr(slideNr)) '& " / " & CStr(slideCount))
+            copy.Style = shape.Style
+            copy.Text.Style = shape.Text.Style
+            copy.Text.CharHeight = shape.Text.CharHeight
+            copy.Text.CharFontFamily = shape.Text.CharFontFamily
+            ' copy.Text.CharFontName = shape.Text.CharFontName
+            copy.Text.CharFontNameComplex = shape.Text.CharFontNameComplex
+            ' copy.Text.CharFontName = "IBM Plex Sans Light"
+            copy.Text.CharColor = shape.CharColor
+            copy.CharHeight = shape.CharHeight
+            copy.CharFontFamily = shape.CharFontFamily
+            ' copy.CharFontName = shape.CharFontName
+            copy.CharFontNameComplex = shape.CharFontNameComplex
+            copy.Text.CharFontName = "IBM Plex Sans Light"
+            copy.CharFontName = "IBM Plex Sans Light"
+            copy.Text.CharColor = shape.Text.CharColor
+            ' copy.Text.CharColor = RGB(255, 255, 255)
+            copy.Position = shape.Position
+            copy.Size = shape.Size
+            copy.TextVerticalAdjust = shape.TextVerticalAdjust
+            copy.TextHorizontalAdjust = com.sun.star.drawing.TextHorizontalAdjust.RIGHT
+            ' copy.TextHorizontalAdjust = shape.TextHorizontalAdjust
+            copy.TextLowerDistance = shape.TextLowerDistance
+            copy.Text.FontWorkAdjust = shape.Text.FontWorkAdjust
+            copy.Text.TextLeftDistance = shape.Text.TextLeftDistance
+            copy.Text.TextRightDistance = shape.Text.TextRightDistance
+        end if
+    next
+    ' additionally, to work with placeholders not in master
     shapeCount = slide.getCount()
     for shapeNr = 0 to shapeCount-1
-        ' shape = master.getByIndex(shapeNr)
         shape = slide.getByIndex(shapeNr)
         shapeType = shape.getShapeType()
         if shapeType = "com.sun.star.drawing.TextShape" then
@@ -180,19 +215,7 @@ function fixateSlideNumber(doc as Object, slide as Object, slideNr as Integer, s
             if Right(shapeString, 8) = "<number>" then
             ' if shapeString = "<number>" then
                 shape.setString(CStr(slideNr))
-            end if
-        end if
-    next
-    master = slide.MasterPage
-    shapeCount = master.getCount()
-    for shapeNr = 0 to shapeCount-1
-        shape = master.getByIndex(shapeNr)
-        shapeType = shape.getShapeType()
-        if shapeType = "com.sun.star.drawing.TextShape" then
-            shapeString = shape.getString()
-            if Right(shapeString, 8) = "<number>" then
-            ' if shapeString = "<number>" then
-                shape.setString(CStr(slideNr))
+                slide.IsPageNumberVisible = False
             end if
         end if
     next
