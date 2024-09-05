@@ -1,3 +1,4 @@
+
 ' ExpandAnimations (https://github.com/monperrus/ExpandAnimations)
 
 ' Copyright 2009-2011 Matthew Neeley.
@@ -153,6 +154,7 @@ function expandDocument(doc as Object, oStatusBar as Object)
                     currentSlide = doc.drawPages(i + frame)
                     currentSlide.Name = origName & " (" & CStr(frame+1) & ")"
                     removeInvisibleShapes(currentSlide, visArray, frame)
+                    fixateSlideNumber(doc, currentSlide, i+1, numSlides)
                 next
             end if
         end if
@@ -166,6 +168,21 @@ function expandDocument(doc as Object, oStatusBar as Object)
 end function
 
 function fixateSlideNumber(doc as Object, slide as Object, slideNr as Integer, slideCount as Integer)
+    ' master = slide.MasterPage
+    ' shapeCount = master.getCount()
+    shapeCount = slide.getCount()
+    for shapeNr = 0 to shapeCount-1
+        ' shape = master.getByIndex(shapeNr)
+        shape = slide.getByIndex(shapeNr)
+        shapeType = shape.getShapeType()
+        if shapeType = "com.sun.star.drawing.TextShape" then
+            shapeString = shape.getString()
+            if Right(shapeString, 8) = "<number>" then
+            ' if shapeString = "<number>" then
+                shape.setString(CStr(slideNr))
+            end if
+        end if
+    next
     master = slide.MasterPage
     shapeCount = master.getCount()
     for shapeNr = 0 to shapeCount-1
@@ -173,7 +190,8 @@ function fixateSlideNumber(doc as Object, slide as Object, slideNr as Integer, s
         shapeType = shape.getShapeType()
         if shapeType = "com.sun.star.drawing.TextShape" then
             shapeString = shape.getString()
-            if shapeString = "<number>" then
+            if Right(shapeString, 8) = "<number>" then
+            ' if shapeString = "<number>" then
                 shape.setString(CStr(slideNr))
             end if
         end if
